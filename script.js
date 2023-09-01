@@ -58,3 +58,7 @@ function formatDate(date) {
     return day + "-" + monthAbbrev + "-" + year;
 }
 
+document.getElementById("clearButton").addEventListener("click", function() {
+    document.getElementById("inputText").value = "";
+    document.getElementById("output").innerHTML = "";
+});
