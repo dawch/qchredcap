@@ -53,8 +53,8 @@ function parseDateTime(datetimeString) {
 
 function formatDate(date) {
     var day = String(date.getDate()).padStart(2, "0");
-    var month = String(date.getMonth() + 1).padStart(2, "0");
+    var monthAbbrev = date.toLocaleString('default', { month: 'short' }); // Get abbreviated month name
     var year = date.getFullYear();
-    return day + "-" + month + "-" + year;
+    return day + "-" + monthAbbrev + "-" + year;
 }
 
