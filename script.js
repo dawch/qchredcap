@@ -16,8 +16,8 @@ document.getElementById("processButton").addEventListener("click", function() {
             var formattedEndDate = formatDate(endTime);
 
             var outputDiv = document.getElementById("output");
-            outputDiv.innerHTML = "Time In PACU: " + formattedStartDate + ", " + startTime.toLocaleTimeString() + "<br>"
-                + "Time Ready for Discharge: " + formattedEndDate + ", " + endTime.toLocaleTimeString() + "<br>"
+            outputDiv.innerHTML = "Time In PACU: " + formattedStartDate + ", " + startTime.toLocaleTimeString('en-GB') + "<br>"
+                + "Time Ready for Discharge: " + formattedEndDate + ", " + endTime.toLocaleTimeString('en-GB') + "<br>"
                 + "Time Difference (minutes): " + timeDifference;
         } else {
             var outputDiv = document.getElementById("output");
