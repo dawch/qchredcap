@@ -62,3 +62,31 @@ document.getElementById("clearButton").addEventListener("click", function() {
     document.getElementById("inputText").value = "";
     document.getElementById("output").innerHTML = "";
 });
+
+document.getElementById("clearButton").addEventListener("click", function() {
+    document.getElementById("inputText").value = "";
+    document.getElementById("output").innerHTML = "";
+});
+
+document.getElementById("copyButton").addEventListener("click", function() {
+    var outputText = document.getElementById("output").textContent;
+
+    // Create a temporary textarea element to hold the text to be copied
+    var tempTextArea = document.createElement("textarea");
+    tempTextArea.value = outputText;
+
+    // Append the textarea to the document
+    document.body.appendChild(tempTextArea);
+
+    // Select the text in the textarea
+    tempTextArea.select();
+
+    // Copy the selected text to the clipboard
+    document.execCommand("copy");
+
+    // Remove the temporary textarea element
+    document.body.removeChild(tempTextArea);
+
+    // Optionally, provide feedback to the user
+    alert("Output text copied to clipboard!");
+});
