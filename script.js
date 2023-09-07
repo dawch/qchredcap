@@ -10,7 +10,7 @@ document.getElementById("processButton").addEventListener("click", function() {
         var endTime = parseDateTime(match[2]);
 
         if (startTime && endTime) {
-            var timeDifference = (endTime - startTime) / (1000 * 60);
+            var timeDifference = (endTime - startTime) / (1000 * 60); // Convert to minutes
 
             var formattedStartDate = formatDate(startTime);
             var formattedEndDate = formatDate(endTime);
@@ -64,7 +64,7 @@ function parseDateTime(datetimeString) {
         if (dateParts.length === 3) {
             var day = parseInt(dateParts[0]);
             var month = parseInt(dateParts[1]);
-            var year = parseInt("20" + dateParts[2]);
+            var year = parseInt("20" + dateParts[2]); // Assuming yy is in the 21st century
             var timeParts = timePart.split(":");
             if (timeParts.length === 3) {
                 var hours = parseInt(timeParts[0]);
@@ -79,8 +79,40 @@ function parseDateTime(datetimeString) {
 
 function formatDate(date) {
     var day = String(date.getDate()).padStart(2, "0");
-    var monthAbbrev = date.toLocaleString('default', { month: 'short' });
+    var monthAbbrev = date.toLocaleString('default', { month: 'short' }); // Get abbreviated month name
     var year = date.getFullYear();
     return day + "-" + monthAbbrev + "-" + year;
 }
 
+document.getElementById("clearButton").addEventListener("click", function() {
+    document.getElementById("inputText").value = "";
+    document.getElementById("output").innerHTML = "";
+});
+
+document.getElementById("clearButton").addEventListener("click", function() {
+    document.getElementById("inputText").value = "";
+    document.getElementById("output").innerHTML = "";
+});
+
+document.getElementById("copyButton").addEventListener("click", function() {
+    var outputText = document.getElementById("output").textContent;
+
+    // Create a temporary textarea element to hold the text to be copied
+    var tempTextArea = document.createElement("textarea");
+    tempTextArea.value = outputText;
+
+    // Append the textarea to the document
+    document.body.appendChild(tempTextArea);
+
+    // Select the text in the textarea
+    tempTextArea.select();
+
+    // Copy the selected text to the clipboard
+    document.execCommand("copy");
+
+    // Remove the temporary textarea element
+    document.body.removeChild(tempTextArea);
+
+    // Optionally, provide feedback to the user
+    alert("Output text copied to clipboard!");
+});
