@@ -55,6 +55,13 @@ document.getElementById("copyButton").addEventListener("click", function() {
     }
 });
 
+document.getElementById("processAndCopyButton").addEventListener("click", processAndCopyToClipboard);
+
+function processAndCopyToClipboard() {
+    processText(); // Call the processText function
+    copyToClipboard(); // Call the copyToClipboard function
+}
+
 function parseDateTime(datetimeString) {
     var parts = datetimeString.split(/\s+/);
     if (parts.length === 2) {
@@ -82,15 +89,4 @@ function formatDate(date) {
     var monthAbbrev = date.toLocaleString('default', { month: 'short' }); // Get abbreviated month name
     var year = date.getFullYear();
     return day + "-" + monthAbbrev + "-" + year;
-}
-
-document.getElementById("clearButton").addEventListener("click", function() {
-    document.getElementById("inputText").value = "";
-    document.getElementById("output").innerHTML = "";
-});
-
-document.getElementById("clearButton").addEventListener("click", function() {
-    document.getElementById("inputText").value = "";
-    document.getElementById("output").innerHTML = "";
-});
-
+};
