@@ -19,7 +19,8 @@ function processText() {
             var outputDiv = document.getElementById("output");
             outputDiv.innerHTML = "Time In PACU: " + formattedStartDate + ", " + startTime.toLocaleTimeString('en-GB') + "<br>"
                 + "Time Ready for Discharge: " + formattedEndDate + ", " + endTime.toLocaleTimeString('en-GB') + "<br>"
-                + "Time Difference (minutes): " + timeDifference;
+                + "Time Difference (minutes): " + timeDifference + "<br>"
+                + "This date is a " + isWeekdayOrWeekend(startTime);
 
             document.getElementById("formattedDate").textContent = formattedStartDate;
         } else {
@@ -85,6 +86,17 @@ function formatDate(date) {
     var year = date.getFullYear();
     return day + "-" + monthAbbrev + "-" + year;
 };
+
+
+function isWeekdayOrWeekend(date) {
+    const dayOfWeek = date.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+        return "***Weekend***"; // Sunday (0) or Saturday (6)
+    } else {
+        return "Weekday"; // Monday (1) to Friday (5)
+    }
+}
+
 
 document.getElementById("processButton").addEventListener("click", processText);
 document.getElementById("copyButton").addEventListener("click", copyToClipboard);
