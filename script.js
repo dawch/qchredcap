@@ -1,4 +1,5 @@
-document.getElementById("processButton").addEventListener("click", function() {
+// Function to process the text
+function processText() {
     var inputText = document.getElementById("inputText").value;
 
     var datetimeRegex = /In\s+PACU\s+(\d{2}\/\d{2}\/\d{2}\s+\d{2}:\d{2}:\d{2})[^0-9]+Ready\s+for\s+Discharge\s+(\d{2}\/\d{2}\/\d{2}\s+\d{2}:\d{2}:\d{2})/i;
@@ -28,18 +29,13 @@ document.getElementById("processButton").addEventListener("click", function() {
         }
     } else {
         var outputDiv = document.getElementById("output");
-        outputDiv.innerHTML = "Times not found or not in expected format.";
+        outputDiv.innerHTML = "Times not found or not in the expected format.";
         document.getElementById("formattedDate").textContent = ""; // Clear the formatted date
     }
-});
+}
 
-document.getElementById("clearButton").addEventListener("click", function() {
-    document.getElementById("inputText").value = "";
-    document.getElementById("output").innerHTML = "";
-    document.getElementById("formattedDate").textContent = ""; // Clear the formatted date
-});
-
-document.getElementById("copyButton").addEventListener("click", function() {
+// Function to copy the formatted date to the clipboard
+function copyToClipboard() {
     var formattedDate = document.getElementById("formattedDate").textContent;
 
     if (formattedDate) {
@@ -53,13 +49,12 @@ document.getElementById("copyButton").addEventListener("click", function() {
 
         alert("Formatted date copied to clipboard!");
     }
-});
+}
 
-document.getElementById("processAndCopyButton").addEventListener("click", processAndCopyToClipboard);
-
-function processAndCopyToClipboard() {
-    processText(); // Call the processText function
-    copyToClipboard(); // Call the copyToClipboard function
+// Function to process and copy in one click
+function processAndCopy() {
+    processText();
+    copyToClipboard();
 }
 
 function parseDateTime(datetimeString) {
@@ -90,3 +85,13 @@ function formatDate(date) {
     var year = date.getFullYear();
     return day + "-" + monthAbbrev + "-" + year;
 };
+
+document.getElementById("processButton").addEventListener("click", processText);
+document.getElementById("copyButton").addEventListener("click", copyToClipboard);
+document.getElementById("processAndCopyButton").addEventListener("click", processAndCopy);
+document.getElementById("clearButton").addEventListener("click", function() {
+    document.getElementById("inputText").value = "";
+    document.getElementById("output").innerHTML = "";
+    document.getElementById("formattedDate").textContent = ""; // Clear the formatted date
+});
+
