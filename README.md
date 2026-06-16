@@ -1,2 +1,3 @@
 # qchredcap
-# not synced with upstream github where all the new changes are 
+
+Small tool to accept date data from iEMR and format it for easy pasting into applications.

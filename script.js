@@ -23,17 +23,20 @@ function processText() {
                 + "This date is a " + isWeekdayOrWeekend(startTime) + "<br>";
 		document.getElementById("formattedDate").textContent = formattedStartDate;
 		document.getElementById("redcapDate").textContent = formatDateRedcap(startTime);
+		generatePostopDates(startTime);
         } else {
             var outputDiv = document.getElementById("output");
             outputDiv.innerHTML = "Invalid date/time format.";
             document.getElementById("formattedDate").textContent = "";
             document.getElementById("redcapDate").textContent = "";
+            document.getElementById("postopDates").innerHTML = "";
         }
     } else {
         var outputDiv = document.getElementById("output");
         outputDiv.innerHTML = "Times not found or not in the expected format.";
         document.getElementById("formattedDate").textContent = "";
         document.getElementById("redcapDate").textContent = "";
+        document.getElementById("postopDates").innerHTML = "";
     }
 }
 
@@ -100,6 +103,27 @@ function formatDateRedcap(date) {
 };
 
 
+function generatePostopDates(startDate) {
+    var labels = [
+        "Date of surgery",
+        "Day 1 post op",
+        "Day 2 post op",
+        "Day 3 post op",
+        "Day 4 post op",
+        "Day 5 post op"
+    ];
+    var html = "<br>";
+    for (var i = 0; i < labels.length; i++) {
+        var d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        var formatted = formatDate(d);
+        var id = "postop-" + i;
+        html += '<div>' + labels[i] + ': <span id="' + id + '">' + formatted + '</span>'
+              + ' <button onclick="copyElementToClipboard(\'' + id + '\', \'' + labels[i] + '\')">Copy</button></div>';
+    }
+    document.getElementById("postopDates").innerHTML = html;
+}
+
 function isWeekdayOrWeekend(date) {
     const dayOfWeek = date.getDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) {
@@ -119,4 +143,5 @@ document.getElementById("clearButton").addEventListener("click", function() {
     document.getElementById("output").innerHTML = "";
     document.getElementById("formattedDate").textContent = "";
     document.getElementById("redcapDate").textContent = "";
+    document.getElementById("postopDates").innerHTML = "";
 });
