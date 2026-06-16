@@ -20,42 +20,47 @@ function processText() {
             outputDiv.innerHTML = "Time In PACU: " + formattedStartDate + ", " + startTime.toLocaleTimeString('en-GB') + "<br>"
                 + "Time Ready for Discharge: " + formattedEndDate + ", " + endTime.toLocaleTimeString('en-GB') + "<br>"
                 + "Time Difference (minutes): " + timeDifference + "<br>"
-                + "This date is a " + isWeekdayOrWeekend(startTime);
-
-            document.getElementById("formattedDate").textContent = formattedStartDate;
+                + "This date is a " + isWeekdayOrWeekend(startTime) + "<br>";
+		document.getElementById("formattedDate").textContent = formattedStartDate;
+		document.getElementById("redcapDate").textContent = formatDateRedcap(startTime);
         } else {
             var outputDiv = document.getElementById("output");
             outputDiv.innerHTML = "Invalid date/time format.";
-            document.getElementById("formattedDate").textContent = ""; // Clear the formatted date
+            document.getElementById("formattedDate").textContent = "";
+            document.getElementById("redcapDate").textContent = "";
         }
     } else {
         var outputDiv = document.getElementById("output");
         outputDiv.innerHTML = "Times not found or not in the expected format.";
-        document.getElementById("formattedDate").textContent = ""; // Clear the formatted date
+        document.getElementById("formattedDate").textContent = "";
+        document.getElementById("redcapDate").textContent = "";
     }
 }
 
-// Function to copy the formatted date to the clipboard
-function copyToClipboard() {
-    var formattedDate = document.getElementById("formattedDate").textContent;
-
-    if (formattedDate) {
+function copyElementToClipboard(elementId, label) {
+    var text = document.getElementById(elementId).textContent;
+    if (text) {
         var tempTextArea = document.createElement("textarea");
-        tempTextArea.value = formattedDate;
-
+        tempTextArea.value = text;
         document.body.appendChild(tempTextArea);
         tempTextArea.select();
         document.execCommand("copy");
         document.body.removeChild(tempTextArea);
-
-        alert("Formatted date copied to clipboard!");
+        alert(label + " copied to clipboard!");
     }
 }
 
-// Function to process and copy in one click
+function copyiEmrDate() {
+    copyElementToClipboard("formattedDate", "iEMR date");
+}
+
+function copyRedcapDate() {
+    copyElementToClipboard("redcapDate", "REDCap date");
+}
+
 function processAndCopy() {
     processText();
-    copyToClipboard();
+    copyiEmrDate();
 }
 
 function parseDateTime(datetimeString) {
@@ -82,9 +87,16 @@ function parseDateTime(datetimeString) {
 
 function formatDate(date) {
     var day = String(date.getDate()).padStart(2, "0");
-    var monthAbbrev = date.toLocaleString('default', { month: 'short' }); // Get abbreviated month name
+    var monthAbbrev = date.toLocaleString('default', { month: 'short' });
     var year = date.getFullYear();
     return day + "-" + monthAbbrev + "-" + year;
+}
+
+function formatDateRedcap(date) {
+    var day = String(date.getDate()).padStart(2, "0");
+    var month = String(date.getMonth() + 1).padStart(2, "0");
+    var year = date.getFullYear();
+    return day + "-" + month + "-" + year;
 };
 
 
@@ -99,11 +111,12 @@ function isWeekdayOrWeekend(date) {
 
 
 document.getElementById("processButton").addEventListener("click", processText);
-document.getElementById("copyButton").addEventListener("click", copyToClipboard);
+document.getElementById("copyiEmrButton").addEventListener("click", copyiEmrDate);
+document.getElementById("copyRedcapButton").addEventListener("click", copyRedcapDate);
 document.getElementById("processAndCopyButton").addEventListener("click", processAndCopy);
 document.getElementById("clearButton").addEventListener("click", function() {
     document.getElementById("inputText").value = "";
     document.getElementById("output").innerHTML = "";
-    document.getElementById("formattedDate").textContent = ""; // Clear the formatted date
+    document.getElementById("formattedDate").textContent = "";
+    document.getElementById("redcapDate").textContent = "";
 });
-

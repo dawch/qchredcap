@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>REDCap Case Times → CSV</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 20px; max-width: 1100px; }
+    textarea { width: 100%; box-sizing: border-box; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; }
+    .btns { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+    button { padding: 10px 14px; border: 1px solid #222; border-radius: 10px; background: #fff; cursor: pointer; }
+    button:hover { background: #f3f3f3; }
+    input, select { padding: 8px; border: 1px solid #ccc; border-radius: 8px; width: 100%; box-sizing: border-box; }
+    small { color: #555; }
+    .status { margin-top: 8px; font-size: 0.95rem; }
+    .ok { color: #0a7a2f; }
+    .warn { color: #a15c00; }
+    .bad { color: #b00020; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .kv { display: grid; grid-template-columns: 220px 1fr; gap: 8px; align-items: center; }
+    .kv label { font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h2>REDCap Case Times Parser → CSV</h2>
+  <p>
+    Paste your case-times block, click <b>Parse</b>, then copy the CSV into REDCap’s Data Import Tool (or save it).
+    Edit the <b>Variable name mapping</b> to match your REDCap field names.
+  </p>
+
+  <div class="row">
+    <div class="card">
+      <h3>1) Paste text</h3>
+      <textarea id="raw" rows="14" placeholder="Paste your LCCH MOT - Case Times block here..."></textarea>
+
+      <div class="btns">
+        <button id="parseBtn">Parse</button>
+        <button id="copyBtn">Copy CSV</button>
+        <button id="clearBtn">Clear</button>
+      </div>
+
+      <div class="kv">
+        <label for="recordId">record_id (optional)</label>
+        <input id="recordId" placeholder="e.g. 12345 (if you want it included in the CSV)" />
+      </div>
+
+      <div class="kv" style="margin-top:10px;">
+        <label for="outFmt">Output datetime format</label>
+        <select id="outFmt">
+          <option value="dmy_seconds" selected>DD/MM/YYYY HH:MM:SS (matches your example)</option>
+          <option value="dmy_minutes">DD/MM/YYYY HH:MM (no seconds)</option>
+          <option value="iso_seconds">YYYY-MM-DD HH:MM:SS (ISO-ish)</option>
+          <option value="iso_minutes">YYYY-MM-DD HH:MM (ISO-ish, no seconds)</option>
+        </select>
+      </div>
+
+      <div class="status" id="status"></div>
+      <small>
+        Tip: If REDCap fields are “datetime (no seconds)”, choose a no-seconds output format.
+      </small>
+    </div>
+
+    <div class="card">
+      <h3>2) Variable name mapping</h3>
+      <p><small>Left = label in pasted text. Right = REDCap variable name (edit these).</small></p>
+
+      <div id="mapping"></div>
+
+      <hr />
+      <small class="mono">
+        Matching expects lines like: <br/>
+        <b>Anaesthetic Start</b> 31/03/23 08:00:00
+      </small>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3>3) CSV output</h3>
+    <textarea id="csv" rows="10" class="mono" placeholder="CSV will appear here..."></textarea>
+  </div>
+
+<script>
+(() => {
+  // --- Default mapping: edit the REDCap variable names as needed ---
+  const DEFAULT_FIELDS = [
+    { label: "Anaesthetic Start",     varname: "anaes_start" },
+    { label: "Anaesthetic Stop",      varname: "anaes_stop" },
+    { label: "Patient In OT",         varname: "patient_in_ot" },
+    { label: "Patient Out of OT",     varname: "patient_out_ot" },
+    { label: "Surgical Start Time",   varname: "surg_start" },
+    { label: "Surgical End Time",     varname: "surg_end" },
+  ];
+
+  const elRaw = document.getElementById("raw");
+  const elCsv = document.getElementById("csv");
+  const elStatus = document.getElementById("status");
+  const elFmt = document.getElementById("outFmt");
+  const elRecordId = document.getElementById("recordId");
+
+  let fields = structuredClone(DEFAULT_FIELDS);
+
+  // --- UI: render mapping inputs ---
+  function renderMapping() {
+    const wrap = document.getElementById("mapping");
+    wrap.innerHTML = "";
+    fields.forEach((f, idx) => {
+      const row = document.createElement("div");
+      row.className = "kv";
+      row.style.marginBottom = "8px";
+
+      const lab = document.createElement("label");
+      lab.textContent = f.label;
+
+      const inp = document.createElement("input");
+      inp.value = f.varname;
+      inp.className = "mono";
+      inp.addEventListener("input", () => {
+        fields[idx].varname = inp.value.trim();
+      });
+
+      row.appendChild(lab);
+      row.appendChild(inp);
+      wrap.appendChild(row);
+    });
+  }
+
+  // --- Helpers ---
+  function escapeRegex(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  // Accept: dd/mm/yy hh:mm or dd/mm/yy hh:mm:ss
+  function parseDT(dmy) {
+    const m = dmy.match(/^(\d{2})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2})(?::(\d{2}))?$/);
+    if (!m) return null;
+    const dd = parseInt(m[1], 10);
+    const mm = parseInt(m[2], 10);
+    const yy = parseInt(m[3], 10);
+    const HH = parseInt(m[4], 10);
+    const MM = parseInt(m[5], 10);
+    const SS = m[6] !== undefined ? parseInt(m[6], 10) : 0;
+
+    // Convert 2-digit year to 4-digit (adjust pivot if you like)
+    const yyyy = (yy >= 70) ? (1900 + yy) : (2000 + yy);
+
+    // Basic sanity checks
+    if (mm < 1 || mm > 12) return null;
+    if (dd < 1 || dd > 31) return null;
+    if (HH < 0 || HH > 23) return null;
+    if (MM < 0 || MM > 59) return null;
+    if (SS < 0 || SS > 59) return null;
+
+    return { dd, mm, yyyy, HH, MM, SS };
+  }
+
+  function pad2(n) { return String(n).padStart(2, "0"); }
+
+  function formatDT(obj, fmt) {
+    if (!obj) return "";
+    const dd = pad2(obj.dd), mm = pad2(obj.mm), yyyy = String(obj.yyyy);
+    const HH = pad2(obj.HH), MM = pad2(obj.MM), SS = pad2(obj.SS);
+
+    switch (fmt) {
+      case "dmy_seconds": return `${dd}/${mm}/${yyyy} ${HH}:${MM}:${SS}`;
+      case "dmy_minutes": return `${dd}/${mm}/${yyyy} ${HH}:${MM}`;
+      case "iso_seconds": return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
+      case "iso_minutes": return `${yyyy}-${mm}-${dd} ${HH}:${MM}`;
+      default: return `${dd}/${mm}/${yyyy} ${HH}:${MM}:${SS}`;
+    }
+  }
+
+  function extractByLabel(text, label) {
+    // label + whitespace + datetime (with optional seconds)
+    const re = new RegExp(escapeRegex(label) + String.raw`\s+(\d{2}\/\d{2}\/\d{2}\s+\d{2}:\d{2}(?::\d{2})?)`);
+    const m = text.match(re);
+    if (!m) return null;
+    return parseDT(m[1]);
+  }
+
+  function csvEscape(value) {
+    const s = String(value ?? "");
+    if (/[,"\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
+  }
+
+  function buildCSV(headers, row) {
+    return headers.map(csvEscape).join(",") + "\n" + row.map(csvEscape).join(",");
+  }
+
+  // --- Main parse ---
+  function doParse() {
+    const raw = elRaw.value || "";
+    const fmt = elFmt.value;
+
+    elStatus.textContent = "";
+    elStatus.className = "status";
+
+    // Collect outputs
+    const out = {};
+    const missing = [];
+    const invalid = [];
+
+    for (const f of fields) {
+      const dtObj = extractByLabel(raw, f.label);
+      if (!dtObj) {
+        missing.push(f.label);
+        out[f.varname] = "";
+        continue;
+      }
+      const formatted = formatDT(dtObj, fmt);
+      if (!formatted) {
+        invalid.push(f.label);
+        out[f.varname] = "";
+      } else {
+        out[f.varname] = formatted;
+      }
+    }
+
+    // Build headers/row
+    const recordId = elRecordId.value.trim();
+    const headers = [];
+    const row = [];
+
+    if (recordId) {
+      headers.push("record_id");
+      row.push(recordId);
+    }
+
+    for (const f of fields) {
+      const vn = (f.varname || "").trim();
+      if (!vn) continue; // skip blank mappings
+      headers.push(vn);
+      row.push(out[vn] ?? "");
+    }
+
+    const csv = buildCSV(headers, row);
+    elCsv.value = csv;
+
+    // Status
+    if (missing.length === 0 && invalid.length === 0) {
+      elStatus.textContent = "Parsed successfully.";
+      elStatus.classList.add("ok");
+    } else {
+      const parts = [];
+      if (missing.length) parts.push(`Missing: ${missing.join("; ")}`);
+      if (invalid.length) parts.push(`Invalid: ${invalid.join("; ")}`);
+      elStatus.textContent = parts.join(" | ");
+      elStatus.classList.add(missing.length ? "warn" : "bad");
+    }
+  }
+
+  async function copyCSV() {
+    const text = elCsv.value || "";
+    if (!text.trim()) {
+      elStatus.textContent = "Nothing to copy yet — click Parse first.";
+      elStatus.className = "status warn";
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      elStatus.textContent = "CSV copied to clipboard.";
+      elStatus.className = "status ok";
+    } catch {
+      // Fallback: select
+      elCsv.focus();
+      elCsv.select();
+      document.execCommand("copy");
+      elStatus.textContent = "CSV selected (and attempted copy). If it didn’t copy, press Ctrl/Cmd+C.";
+      elStatus.className = "status warn";
+    }
+  }
+
+  function clearAll() {
+    elRaw.value = "";
+    elCsv.value = "";
+    elStatus.textContent = "";
+    elRecordId.value = "";
+  }
+
+  // Wire up buttons
+  document.getElementById("parseBtn").addEventListener("click", doParse);
+  document.getElementById("copyBtn").addEventListener("click", copyCSV);
+  document.getElementById("clearBtn").addEventListener("click", clearAll);
+
+  // Render mapping on load
+  renderMapping();
+})();
+</script>
+</body>
+</html>
+

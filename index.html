@@ -4,20 +4,21 @@
     <title>Date and Time Processing</title>
 </head>
 <body>
-    
+
     <textarea id="inputText" rows="5" cols="50" placeholder="Paste text here"></textarea><br>
     <button id="processButton">Process</button>
     <button id="clearButton">Clear Form</button>
-    <button id="copyButton">Copy Formatted Date to Clipboard</button>
-     <br> <!-- New line break -->
-    
-    <button id="processAndCopyButton">Process and Copy</button>
-    
+    <br>
+    <button id="copyiEmrButton">Copy iEMR Date</button>
+    <button id="copyRedcapButton">Copy REDCap Date</button>
+    <br>
+    <button id="processAndCopyButton">Process and Copy iEMR Date</button>
+
     <div id="output"></div>
-    <div id="formattedDate"></div> <!-- Add this element -->
+    <div>iEMR formatted date: <span id="formattedDate"></span></div>
+    <div>REDCap formatted date: <span id="redcapDate"></span></div>
 
     <script src="script.js"></script>
+
 </body>
 </html>
-
-
