@@ -8,15 +8,11 @@
     <textarea id="inputText" rows="5" cols="50" placeholder="Paste text here"></textarea><br>
     <button id="processButton">Process</button>
     <button id="clearButton">Clear Form</button>
-    <br>
-    <button id="copyiEmrButton">Copy iEMR Date</button>
-    <button id="copyRedcapButton">Copy REDCap Date</button>
-    <br>
     <button id="processAndCopyButton">Process and Copy iEMR Date</button>
 
     <div id="output"></div>
-    <div>iEMR formatted date: <span id="formattedDate"></span></div>
-    <div>REDCap formatted date: <span id="redcapDate"></span></div>
+    <div>iEMR formatted date: <span id="formattedDate"></span> <button onclick="copyiEmrDate()">Copy</button></div>
+    <div>REDCap formatted date: <span id="redcapDate"></span> <button onclick="copyRedcapDate()">Copy</button></div>
     <div id="postopDates"></div>
 
     <script src="script.js"></script>

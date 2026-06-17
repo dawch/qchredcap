@@ -26,14 +26,14 @@ function processText() {
 		generatePostopDates(startTime);
         } else {
             var outputDiv = document.getElementById("output");
-            outputDiv.innerHTML = "Invalid date/time format.";
+            outputDiv.innerHTML = '<span style="color: red; font-weight: bold;">⚠ Invalid date/time format.</span>';
             document.getElementById("formattedDate").textContent = "";
             document.getElementById("redcapDate").textContent = "";
             document.getElementById("postopDates").innerHTML = "";
         }
     } else {
         var outputDiv = document.getElementById("output");
-        outputDiv.innerHTML = "Times not found or not in the expected format.";
+        outputDiv.innerHTML = '<span style="color: red; font-weight: bold;">⚠ Times not found or not in the expected format.</span>';
         document.getElementById("formattedDate").textContent = "";
         document.getElementById("redcapDate").textContent = "";
         document.getElementById("postopDates").innerHTML = "";
@@ -135,8 +135,6 @@ function isWeekdayOrWeekend(date) {
 
 
 document.getElementById("processButton").addEventListener("click", processText);
-document.getElementById("copyiEmrButton").addEventListener("click", copyiEmrDate);
-document.getElementById("copyRedcapButton").addEventListener("click", copyRedcapDate);
 document.getElementById("processAndCopyButton").addEventListener("click", processAndCopy);
 document.getElementById("clearButton").addEventListener("click", function() {
     document.getElementById("inputText").value = "";
