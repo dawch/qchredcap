@@ -88,9 +88,11 @@ function parseDateTime(datetimeString) {
     return null;
 }
 
+var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
 function formatDate(date) {
     var day = String(date.getDate()).padStart(2, "0");
-    var monthAbbrev = date.toLocaleString('default', { month: 'short' });
+    var monthAbbrev = MONTHS[date.getMonth()];
     var year = date.getFullYear();
     return day + "-" + monthAbbrev + "-" + year;
 }
