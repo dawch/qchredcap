@@ -17,8 +17,8 @@ function processText() {
             var formattedEndDate = formatDate(endTime);
 
             var outputDiv = document.getElementById("output");
-            outputDiv.innerHTML = "Time In PACU: " + formattedStartDate + ", " + startTime.toLocaleTimeString('en-GB') + "<br>"
-                + "Time Ready for Discharge: " + formattedEndDate + ", " + endTime.toLocaleTimeString('en-GB') + "<br>"
+            outputDiv.innerHTML = "Time In PACU: " + formattedStartDate + ", " + startTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + "<br>"
+                + "Time Ready for Discharge: " + formattedEndDate + ", " + endTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + "<br>"
                 + "Time Difference (minutes): " + timeDifference + "<br>"
                 + "This date is a " + isWeekdayOrWeekend(startTime) + "<br>";
 		document.getElementById("formattedDate").textContent = formattedStartDate;
@@ -89,6 +89,7 @@ function parseDateTime(datetimeString) {
 }
 
 var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
 function formatDate(date) {
     var day = String(date.getDate()).padStart(2, "0");
@@ -121,6 +122,7 @@ function generatePostopDates(startDate) {
         var formatted = formatDate(d);
         var id = "postop-" + i;
         html += '<div>' + labels[i] + ': <span id="' + id + '">' + formatted + '</span>'
+              + ' (' + DAYS[d.getDay()] + ')'
               + ' <button onclick="copyElementToClipboard(\'' + id + '\', \'' + labels[i] + '\')">Copy</button></div>';
     }
     document.getElementById("postopDates").innerHTML = html;
@@ -128,10 +130,11 @@ function generatePostopDates(startDate) {
 
 function isWeekdayOrWeekend(date) {
     const dayOfWeek = date.getDay();
+    const dayName = DAYS[dayOfWeek];
     if (dayOfWeek === 0 || dayOfWeek === 6) {
-        return "***Weekend***"; // Sunday (0) or Saturday (6)
+        return "***" + dayName + "***";
     } else {
-        return "Weekday"; // Monday (1) to Friday (5)
+        return dayName;
     }
 }
 
